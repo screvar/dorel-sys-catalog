@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e71a1a3d-cb76-4d24-84e4-6c21c0d0e5ab" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="dorel-sys-catalogFlow" doc:id="0021939f-5424-4242-adfa-60b6a79cee40" >
+		<http:listener doc:name="Listener" doc:id="ab446d9f-df74-4cba-a3e8-c637c1799945" config-ref="HTTP_Listener_config" path="/dorelSys" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="05d13d8d-c105-4233-bf4e-28047668113c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import modules::myGlobalCustomFunctions as call
+output application/json
+
+---
+payload.client map   {
+	Title: call::getTitle($.Gender),
+	Name: $.FirstName ++ " " ++ $.LastName,
+	Address: $.Address ++ ", " ++ $.PostCode ++ ", " ++ $.City ++ "- "++ $.State,
+	Phone: $.Phone,
+	Birth: call::formatDate($.DateOfBirth),
+	CivilStatus: call::civilStatus[0].SINGLE
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
